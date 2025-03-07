@@ -3,6 +3,7 @@ const axios = require("axios");
 const multer = require("multer");
 const pdfParse = require("pdf-parse");
 const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
 
 const app = express();
@@ -63,3 +64,6 @@ app.post("/ask", async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
+
+// Export for serverless
+module.exports = app;
