@@ -1,0 +1,2 @@
+- simple chat pdf using gemini api
+- tech stack : expressJS + alpineJS
