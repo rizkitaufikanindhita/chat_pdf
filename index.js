@@ -7,7 +7,6 @@ const path = require("path");
 require("dotenv").config();
 
 const app = express();
-const PORT = 3000;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_API_URL = process.env.GEMINI_API_URL;
 
@@ -15,13 +14,15 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 app.use(express.json());
-app.use(cors());
-app.use(express.static(__dirname)); 
+app.use(cors({ origin: "*" })); // Ubah jika ingin lebih aman
+app.use(express.static("public")); // Agar bisa serve static file dari public/
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-  });
+// Serve halaman utama
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
+// Endpoint untuk upload PDF
 app.post("/upload-pdf", upload.single("file"), async (req, res) => {
     try {
         if (!req.file) {
@@ -38,6 +39,7 @@ app.post("/upload-pdf", upload.single("file"), async (req, res) => {
     }
 });
 
+// Endpoint untuk bertanya ke Gemini AI
 app.post("/ask", async (req, res) => {
     try {
         const { question, pdfContent } = req.body;
@@ -61,9 +63,5 @@ app.post("/ask", async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
-
-// Export for serverless
+// Export untuk serverless di Vercel
 module.exports = app;
