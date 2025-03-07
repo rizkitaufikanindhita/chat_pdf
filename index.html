@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat PDF with Gemini</title>
+    <script
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+      defer
+    ></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div
+      class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg"
+      x-data="chatApp()"
+    >
+      <h2 class="text-xl font-bold mb-4 text-center">
+        Upload PDF and Ask Gemini
+      </h2>
+
+      <!-- Upload PDF -->
+      <input
+        type="file"
+        @change="uploadPDF"
+        accept="application/pdf"
+        class="block w-full text-sm text-gray-500 border border-gray-300 rounded-lg cursor-pointer p-2 mb-4"
+      />
+      <p class="text-sm text-green-600" x-text="uploadMessage"></p>
+
+      <!-- Ask Question -->
+      <div class="flex space-x-2">
+        <input
+          type="text"
+          x-model="question"
+          placeholder="Ask a question..."
+          class="flex-1 p-2 border border-gray-300 rounded-md"
+        />
+        <button
+          @click="askGemini"
+          class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+        >
+          Ask
+        </button>
+      </div>
+
+      <h3 class="text-lg font-semibold mt-4">Answer:</h3>
+      <p class="p-2 bg-gray-100 rounded-md" x-text="answer"></p>
+    </div>
+
+    <script>
+      function chatApp() {
+        return {
+          pdfContent: "",
+          question: "",
+          answer: "",
+          uploadMessage: "",
+
+          async uploadPDF(event) {
+            let file = event.target.files[0];
+            if (!file) return;
+
+            let formData = new FormData();
+            formData.append("file", file);
+
+            let response = await fetch("http://localhost:3000/upload-pdf", {
+              method: "POST",
+              headers: { enctype: "multipart/form-data" },
+              body: formData,
+            });
+
+            let result = await response.json();
+            this.uploadMessage = result.message;
+            this.pdfContent = result.content;
+          },
+
+          async askGemini() {
+            if (!this.question || !this.pdfContent) return;
+
+            let response = await fetch("http://localhost:3000/ask", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                question: this.question,
+                pdfContent: this.pdfContent,
+              }),
+            });
+
+            let result = await response.json();
+            this.answer = result.answer;
+          },
+        };
+      }
+    </script>
+  </body>
+</html>
